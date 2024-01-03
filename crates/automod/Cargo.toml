@@ -1,0 +1,15 @@
+[package]
+name = "automod"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+clap = { workspace = true }
+lemmy_client = { path = "../lemmy_client" }
+plugin_mod_log = { path = "../plugin_mod_log" }
+plugin_private_message = { path = "../plugin_private_message" }
+serde = { workspace = true }
+tokio = { workspace = true }
+toml = { workspace = true }

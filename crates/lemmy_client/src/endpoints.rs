@@ -1,0 +1,12 @@
+pub const ADMIN_PURGE_USER: &str = "/api/v3/admin/purge/person";
+pub const COMMENT_REPORT: &str = "/api/v3/comment/report";
+pub const LOGIN: &str = "/api/v3/user/login";
+pub const MODLOG: &str = "/api/v3/modlog";
+pub const POST_REPORT: &str = "/api/v3/post/report";
+pub const PRIVATE_MESSAGE: &str = "/api/v3/private_message";
+pub const PRIVATE_MESSAGE_DELETE: &str = "/api/v3/private_message/delete";
+pub const PRIVATE_MESSAGE_LIST: &str = "/api/v3/private_message/list";
+pub const PRIVATE_MESSAGE_READ: &str = "/api/v3/private_message/mark_as_read";
+pub const SITE: &str = "/api/v3/site";
+pub const USER: &str = "/api/v3/user";
+pub const USER_BAN: &str = "/api/v3/user/ban";

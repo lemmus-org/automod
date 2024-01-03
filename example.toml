@@ -1,0 +1,30 @@
+# Basic configuration required for use
+[lemmy]
+# Hostname of lemmy instance
+host = "https://lemmy.example"
+# Username and password for authentication
+username = "automod"
+password = "a_really_complex_password"
+
+# Plugins
+
+# ModLog configuration
+# See: docs/plugins/ModLog.md
+# Default values below
+[plugins.mod_log]
+enabled = false
+interval = 60
+allowlist_federated_actions = []
+notify_bans = false
+notify_federated_bans = false
+notify_removals = false
+
+# PrivateMessage configuration
+# See: docs/plugins/PrivateMesage.md
+# Default values below
+[plugins.private_message]
+enabled = false
+interval = 60
+prune_messages = false
+allow_message_commands = false
+audit_message_commands = false

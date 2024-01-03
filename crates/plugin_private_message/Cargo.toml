@@ -1,0 +1,12 @@
+[package]
+name = "plugin_private_message"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+chrono = { workspace = true }
+lemmy_client = { path = "../lemmy_client" }
+plugin_common = { path = "../plugin_common" }
+serde = { workspace = true }

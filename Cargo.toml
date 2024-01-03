@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/*"
+]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.75"
+publish = false
+
+[workspace.dependencies]
+chrono = "0.4.31"
+clap = "4.4.12"
+http-cache-reqwest = "0.12.0"
+lemmy_api_common = "0.19.1"
+tokio = { version = "1.35.1", features = ["full"] }
+reqwest = { version = "0.11", features = ["json"] }
+reqwest-middleware = "0.2.4"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.7.6"
+url = "2.5.0"

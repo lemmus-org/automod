@@ -1,0 +1,8 @@
+# Compilation target
+/target
+
+# HTTP Cache
+/http-cacache
+
+# Configuration file
+automod.toml
