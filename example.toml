@@ -26,5 +26,6 @@ notify_removals = false
 enabled = false
 interval = 60
 prune_messages = false
+forward_messages = false
 allow_message_commands = false
 audit_message_commands = false

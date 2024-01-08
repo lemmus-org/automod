@@ -268,3 +268,9 @@ impl From<private_message::PrivateMessage> for PrivateMessage {
         }
     }
 }
+
+impl Display for PrivateMessage {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.content)
+    }
+}

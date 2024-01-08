@@ -20,7 +20,6 @@
   * Remove any posts linking to URLs that aren't allowed
 * Registration applications
 * Private message
-  * Add support for notifying admins whenever a user sends it a message.
   * Add support for common moderator actions.
 
 ## Ideas
