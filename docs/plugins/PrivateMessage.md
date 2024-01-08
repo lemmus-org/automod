@@ -4,23 +4,27 @@ Support common actions for private messages.
 
 ## Config
 
-### enabled
+### `enabled`
 
 Toggles the plugin.
 
-### interval
+### `interval`
 
 Frequency, in seconds, for invoking the plugin.
 
-### prune_messages
+### `prune_messages`
 
 Delete any private messages sent to the bot after a period of time.
 
-### allow_message_commands
+### `forward_messages`
+
+Forwards any private messages from users.
+
+### `allow_message_commands`
 
 Allow commands to be sent to the bot for convenience.
 
-### audit_message_commands
+### `audit_message_commands`
 
 Notify local admins any time a message command has been performed.
 
