@@ -6,7 +6,7 @@ use lemmy_client::private_message::{
     private_message_create, private_message_delete, private_message_list, private_message_read,
 };
 use lemmy_client::site::site_admins_get;
-use lemmy_client::{Client, ClientError};
+use lemmy_client::{model, Client, ClientError};
 use plugin_common::notify_admins;
 
 mod commands;
@@ -48,12 +48,82 @@ impl PrivateMessage {
             prune_messages(client, now).await;
         }
 
-        if self.config.allow_message_commands {
-            // Perform any message commands
-            perform_message_commands(client, self.config.audit_message_commands).await;
+        if self.config.allow_message_commands || self.config.forward_messages {
+            // Check private messages
+            self.check_messages(client).await;
         }
 
         println!("Finished checking private messages!");
+    }
+
+    async fn check_messages(&self, client: &Client) {
+        // Get any unread message
+        let unread_messages = match private_message_list(client, true).await {
+            Ok(value) => value,
+            Err(err) => {
+                println!("{}", err);
+                return;
+            }
+        };
+
+        // Get list of local admins
+        let admins = match site_admins_get(client).await {
+            Ok(admins) => admins,
+            Err(err) => {
+                println!("{}", err);
+                return;
+            }
+        };
+
+        // Check each unread message
+        for message in unread_messages {
+            // Skip our own messages
+            if message.sender_id == client.user_id() {
+                continue;
+            }
+
+            // Mark message as read
+            if let Err(err) = private_message_read(client, message.id).await {
+                println!("{}", err);
+                continue;
+            }
+
+            // Fetch sender details
+            let person = match person_get(client, PersonRef::Id(message.sender_id)).await {
+                Ok(value) => value,
+                Err(err) => {
+                    println!("{}", err);
+                    continue;
+                }
+            };
+
+            let is_local = person.is_local;
+            let is_admin = admins.iter().any(|admin| admin.id == person.id);
+
+            // Verify sender is a local admin
+            // NOTE: This could be extended to support limited commands for moderators
+            if is_local && is_admin {
+                if self.config.allow_message_commands {
+                    // Perform command contained within the message
+                    perform_message_commands(
+                        client,
+                        &admins,
+                        &person,
+                        &message,
+                        self.config.audit_message_commands,
+                    )
+                    .await;
+                }
+            } else if self.config.forward_messages {
+                // Forward message to admins
+                let body = format!(
+                    "* user = {}\r\n\
+                    * message = `{}`",
+                    person, message
+                );
+                notify_admins(client, &admins, body).await;
+            }
+        }
     }
 }
 
@@ -84,90 +154,49 @@ async fn prune_messages(client: &Client, now: DateTime<Utc>) {
     }
 }
 
-async fn perform_message_commands(client: &Client, auditlog: bool) {
-    // Get any unread message
-    let unread_messages = match private_message_list(client, true).await {
-        Ok(value) => value,
-        Err(err) => {
-            println!("{}", err);
-            return;
-        }
-    };
-
-    // Get list of local admins
-    let admins = match site_admins_get(client).await {
-        Ok(admins) => admins,
-        Err(err) => {
-            println!("{}", err);
-            return;
-        }
-    };
-
-    // Check each unread message
-    for message in unread_messages {
-        // Skip our own messages
-        if message.sender_id == client.user_id() {
-            continue;
-        }
-
-        // Mark message as read
-        if let Err(err) = private_message_read(client, message.id).await {
-            println!("{}", err);
-            continue;
-        }
-
-        // Fetch sender details
-        let person = match person_get(client, PersonRef::Id(message.sender_id)).await {
-            Ok(value) => value,
-            Err(err) => {
+async fn perform_message_commands(
+    client: &Client,
+    admins: &Vec<Person>,
+    sender: &Person,
+    message: &model::PrivateMessage,
+    auditlog: bool,
+) {
+    // Verify message is a command
+    let content = message.content.trim();
+    let command = match Commands::parse(content) {
+        None => {
+            let body = format!("invalid or unsupported command: `{}`", content);
+            if let Err(err) = private_message_create(client, message.sender_id, body).await {
                 println!("{}", err);
-                continue;
             }
-        };
-
-        // Verify sender is a local admin
-        // NOTE: This could be extended to support limited commands for moderators
-        if !person.is_local || !admins.iter().any(|admin| admin.id == person.id) {
-            continue;
+            return;
         }
+        Some(command) => {
+            println!("Received command: {}", command);
+            command
+        }
+    };
 
-        // Verify message is a command
-        let content = message.content.trim();
-        let command = match Commands::parse(content) {
-            None => {
-                let body = format!("invalid or unsupported command: `{}`", content);
-                if let Err(err) = private_message_create(client, message.sender_id, body).await {
-                    println!("{}", err);
-                }
-                continue;
+    // Execute command
+    let action = command.to_string();
+    match perform_command(client, command, admins).await {
+        Ok(_) => {
+            if auditlog {
+                let body = format!(
+                    "`{}` performed a message command:\r\n{}",
+                    sender.name, action
+                );
+                notify_admins(client, admins, body.clone()).await;
             }
-            Some(command) => {
-                println!("Received command: {}", command);
-                command
+        }
+        // Let the sender know the command failed
+        Err(err) => {
+            let body = format!("command failed: `{}`", err);
+            if let Err(err) = private_message_create(client, message.sender_id, body).await {
+                println!("{}", err);
             }
-        };
-
-        // Execute command
-        let action = command.to_string();
-        match perform_command(client, command, &admins).await {
-            Ok(_) => {
-                if auditlog {
-                    let body = format!(
-                        "`{}` performed a message command:\r\n{}",
-                        person.name, action
-                    );
-                    notify_admins(client, &admins, body.clone()).await;
-                }
-            }
-            // Let the sender know the command failed
-            Err(err) => {
-                let body = format!("command failed: `{}`", err);
-                if let Err(err) = private_message_create(client, message.sender_id, body).await {
-                    println!("{}", err);
-                }
-            }
-        };
-    }
+        }
+    };
 }
 
 async fn perform_command(
