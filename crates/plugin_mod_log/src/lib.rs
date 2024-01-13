@@ -109,6 +109,7 @@ async fn federate_ban_action(
         moderator,
         user,
         is_banned,
+        expires,
         ..
     } = ban
     {
@@ -124,7 +125,9 @@ async fn federate_ban_action(
         if allowlist.contains(&moderator.instance) {
             // Perform ban locally
             let reason = format!("Federated ban from {}", moderator.instance);
-            if let Err(err) = person_ban(client, user.id, is_banned, None, Some(reason)).await {
+            if let Err(err) =
+                person_ban(client, user.id, is_banned, None, Some(reason), expires).await
+            {
                 println!("{}", err);
                 return;
             }
