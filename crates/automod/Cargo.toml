@@ -5,6 +5,9 @@ edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
+[features]
+json-log = ["tracing-subscriber/json"]
+
 [dependencies]
 clap = { workspace = true }
 lemmy_client = { path = "../lemmy_client" }
@@ -13,3 +16,5 @@ plugin_private_message = { path = "../plugin_private_message" }
 serde = { workspace = true }
 tokio = { workspace = true }
 toml = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

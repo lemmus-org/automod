@@ -3,6 +3,7 @@ use lemmy_client::Client;
 use plugin_mod_log::ModLog;
 use plugin_private_message::PrivateMessage;
 use std::time::Duration;
+use tracing::info;
 
 pub struct Bot {
     mod_log: ModLog,
@@ -18,7 +19,7 @@ impl Bot {
     }
 
     pub async fn run(&mut self, client: Client) {
-        println!("Starting lemmy automod!");
+        info!("Starting Lemmy AutoMod!");
 
         loop {
             // Invoke each plugin
