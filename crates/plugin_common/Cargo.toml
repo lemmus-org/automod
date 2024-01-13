@@ -7,3 +7,4 @@ publish.workspace = true
 
 [dependencies]
 lemmy_client = { path = "../lemmy_client" }
+tracing = { workspace = true }

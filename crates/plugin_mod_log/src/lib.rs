@@ -5,6 +5,7 @@ use lemmy_client::person::person_ban;
 use lemmy_client::site::site_admins_get;
 use lemmy_client::Client;
 use plugin_common::notify_admins;
+use tracing::{debug, error};
 
 pub mod config;
 
@@ -37,7 +38,7 @@ impl ModLog {
         }
         self.last_run = now;
 
-        println!("Checking modlog...");
+        debug!("Checking modlog...");
 
         // Get all modlog actions against local users since last run
         match modlog_local_get(client, since).await {
@@ -46,7 +47,7 @@ impl ModLog {
                 let admins = match site_admins_get(client).await {
                     Ok(admins) => admins,
                     Err(err) => {
-                        println!("{}", err);
+                        error!("{}", err);
                         return;
                     }
                 };
@@ -93,7 +94,7 @@ impl ModLog {
             Err(err) => println!("{}", err),
         }
 
-        println!("Finished checking modlog!");
+        debug!("Finished checking modlog!");
     }
 }
 
@@ -128,7 +129,7 @@ async fn federate_ban_action(
             if let Err(err) =
                 person_ban(client, user.id, is_banned, None, Some(reason), expires).await
             {
-                println!("{}", err);
+                error!("{}", err);
                 return;
             }
 

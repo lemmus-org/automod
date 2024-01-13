@@ -2,6 +2,7 @@ use plugin_mod_log::config::ModLog;
 use plugin_private_message::config::PrivateMessage;
 use serde::Deserialize;
 use std::fs;
+use tracing::error;
 
 #[derive(Deserialize)]
 pub struct Config {
@@ -14,7 +15,7 @@ impl Config {
         let contents = match fs::read_to_string(filepath) {
             Ok(data) => data,
             Err(err) => {
-                println!("failed to read file: {} -> {}", filepath, err);
+                error!("failed to read file: {} -> {}", filepath, err);
                 return None;
             }
         };
@@ -22,7 +23,7 @@ impl Config {
         match result {
             Ok(config) => Some(config),
             Err(err) => {
-                println!("failed to parse config: {}", err);
+                error!("failed to parse config: {}", err);
                 None
             }
         }

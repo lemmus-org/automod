@@ -10,3 +10,4 @@ chrono = { workspace = true }
 lemmy_client = { path = "../lemmy_client" }
 plugin_common = { path = "../plugin_common" }
 serde = { workspace = true }
+tracing = { workspace = true }

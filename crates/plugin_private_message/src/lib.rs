@@ -8,6 +8,7 @@ use lemmy_client::private_message::{
 use lemmy_client::site::site_admins_get;
 use lemmy_client::{model, Client, ClientError};
 use plugin_common::notify_admins;
+use tracing::{debug, error};
 
 mod commands;
 pub mod config;
@@ -41,7 +42,7 @@ impl PrivateMessage {
         }
         self.last_run = now;
 
-        println!("Checking private messages...");
+        debug!("Checking private messages...");
 
         if self.config.prune_messages {
             // Prune private messages
@@ -53,7 +54,7 @@ impl PrivateMessage {
             self.check_messages(client).await;
         }
 
-        println!("Finished checking private messages!");
+        debug!("Finished checking private messages!");
     }
 
     async fn check_messages(&self, client: &Client) {
@@ -61,7 +62,7 @@ impl PrivateMessage {
         let unread_messages = match private_message_list(client, true).await {
             Ok(value) => value,
             Err(err) => {
-                println!("{}", err);
+                error!("{}", err);
                 return;
             }
         };
@@ -70,7 +71,7 @@ impl PrivateMessage {
         let admins = match site_admins_get(client).await {
             Ok(admins) => admins,
             Err(err) => {
-                println!("{}", err);
+                error!("{}", err);
                 return;
             }
         };
@@ -84,7 +85,7 @@ impl PrivateMessage {
 
             // Mark message as read
             if let Err(err) = private_message_read(client, message.id).await {
-                println!("{}", err);
+                error!("{}", err);
                 continue;
             }
 
@@ -92,7 +93,7 @@ impl PrivateMessage {
             let person = match person_get(client, PersonRef::Id(message.sender_id)).await {
                 Ok(value) => value,
                 Err(err) => {
-                    println!("{}", err);
+                    error!("{}", err);
                     continue;
                 }
             };
@@ -132,7 +133,7 @@ async fn prune_messages(client: &Client, now: DateTime<Utc>) {
     let read_messages = match private_message_list(client, false).await {
         Ok(value) => value,
         Err(err) => {
-            println!("{}", err);
+            error!("{}", err);
             return;
         }
     };
@@ -147,7 +148,7 @@ async fn prune_messages(client: &Client, now: DateTime<Utc>) {
 
         if message.created <= stale_threshold {
             if let Err(err) = private_message_delete(client, message.id).await {
-                println!("{}", err);
+                error!("{}", err);
                 continue;
             }
         }
@@ -167,12 +168,12 @@ async fn perform_message_commands(
         None => {
             let body = format!("invalid or unsupported command: `{}`", content);
             if let Err(err) = private_message_create(client, message.sender_id, body).await {
-                println!("{}", err);
+                error!("{}", err);
             }
             return;
         }
         Some(command) => {
-            println!("Received command: {}", command);
+            error!("Received command: {}", command);
             command
         }
     };
@@ -193,7 +194,7 @@ async fn perform_message_commands(
         Err(err) => {
             let body = format!("command failed: `{}`", err);
             if let Err(err) = private_message_create(client, message.sender_id, body).await {
-                println!("{}", err);
+                error!("{}", err);
             }
         }
     };
@@ -210,7 +211,7 @@ async fn perform_command(
             let person = match person_get(client, PersonRef::Username(username)).await {
                 Ok(value) => value,
                 Err(err) => {
-                    println!("{}", err);
+                    error!("{}", err);
                     return Err(err);
                 }
             };
@@ -222,7 +223,7 @@ async fn perform_command(
 
             // Perform user purge
             if let Err(err) = person_purge(client, person.id, Some(reason)).await {
-                println!("{}", err);
+                error!("{}", err);
                 return Err(err);
             }
 
@@ -248,7 +249,7 @@ async fn perform_site_ban(
     let person = match person_get(client, PersonRef::Username(username)).await {
         Ok(value) => value,
         Err(err) => {
-            println!("{}", err);
+            error!("{}", err);
             return Err(err);
         }
     };
@@ -269,7 +270,7 @@ async fn perform_site_ban(
     )
     .await
     {
-        println!("{}", err);
+        error!("{}", err);
         return Err(err);
     }
 
