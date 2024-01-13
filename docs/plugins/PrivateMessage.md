@@ -41,9 +41,16 @@ Performs a site ban against a specific user.
 Example:
 `!site_ban username reason`
 
+### site_ban_remove
+
+Performs a site ban against a specific user and removes their content.
+
+Example:
+`!site_ban_remove username reason`
+
 ### purge_user
 
-Purges a user's content.
+Purges a user's content. This does not currently federate!
 
 Example:
 `!purge_user username reason`

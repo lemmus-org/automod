@@ -3,9 +3,11 @@ use std::fmt::{Display, Formatter};
 const PREFIX: char = '!';
 const PURGE_USER: &str = "purge_user";
 const SITE_BAN: &str = "site_ban";
+const SITE_BAN_REMOVE: &str = "site_ban_remove";
 
 pub enum Commands {
     SiteBan(String, String),
+    SiteBanRemove(String, String),
     PurgeUser(String, String),
 }
 
@@ -26,6 +28,16 @@ impl Commands {
                 let reason = parts[2].to_string();
 
                 Some(Commands::PurgeUser(username, reason))
+            }
+            SITE_BAN_REMOVE => {
+                if parts.len() < 3 {
+                    return None;
+                }
+
+                let username = parts[1].to_string();
+                let reason = parts[2].to_string();
+
+                Some(Commands::SiteBanRemove(username, reason))
             }
             SITE_BAN => {
                 if parts.len() < 3 {
@@ -52,6 +64,15 @@ impl Display for Commands {
                      * user = {}\r\n\
                      * reason = `{}`",
                     PURGE_USER, username, reason
+                )
+            }
+            Commands::SiteBanRemove(username, reason) => {
+                write!(
+                    f,
+                    "* command = `{}`\r\n\
+                     * user = {}\r\n\
+                     * reason = `{}`",
+                    SITE_BAN_REMOVE, username, reason
                 )
             }
             Commands::SiteBan(username, reason) => {

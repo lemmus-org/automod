@@ -113,6 +113,7 @@ async fn get_site_bans(
                         user: banned_user,
                         is_banned: view.mod_ban.banned,
                         reason: view.mod_ban.reason,
+                        expires: view.mod_ban.expires,
                     };
                     actions.push(action);
                 }
@@ -158,6 +159,7 @@ async fn get_community_bans(
                         community: Community::from(view.community),
                         is_banned: view.mod_ban_from_community.banned,
                         reason: view.mod_ban_from_community.reason,
+                        expires: view.mod_ban_from_community.expires,
                     };
                     actions.push(action);
                 }

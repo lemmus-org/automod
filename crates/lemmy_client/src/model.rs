@@ -42,6 +42,7 @@ pub enum ModlogBan {
         user: Person,
         is_banned: bool,
         reason: Option<String>,
+        expires: Option<DateTime<Utc>>,
     },
     Community {
         moderator: Person,
@@ -49,6 +50,7 @@ pub enum ModlogBan {
         community: Community,
         is_banned: bool,
         reason: Option<String>,
+        expires: Option<DateTime<Utc>>,
     },
 }
 
@@ -60,17 +62,22 @@ impl Display for ModlogBan {
                 user,
                 is_banned,
                 reason,
+                expires,
             } => {
                 write!(
                     f,
                     "* site_ban = `{}`\r\n\
                     * user = {}\r\n\
                     * mod = {}\r\n\
-                    * reason = `{}`",
+                    * reason = `{}`\r\n\
+                    * expires = `{}`",
                     is_banned,
                     user,
                     moderator,
-                    reason.clone().unwrap_or_default()
+                    reason.clone().unwrap_or_default(),
+                    expires
+                        .map(|exp| exp.to_rfc3339())
+                        .unwrap_or("N/A".to_string())
                 )
             }
             ModlogBan::Community {
@@ -79,6 +86,7 @@ impl Display for ModlogBan {
                 community,
                 is_banned,
                 reason,
+                expires,
             } => {
                 write!(
                     f,
@@ -86,12 +94,16 @@ impl Display for ModlogBan {
                     * user = {}\r\n\
                     * community = {}\r\n\
                     * mod = {}\r\n\
-                    * reason = `{}`",
+                    * reason = `{}`\r\n\
+                    * expires = `{}`",
                     is_banned,
                     user,
                     community,
                     moderator,
-                    reason.clone().unwrap_or_default()
+                    reason.clone().unwrap_or_default(),
+                    expires
+                        .map(|exp| exp.to_rfc3339())
+                        .unwrap_or("N/A".to_string())
                 )
             }
         }

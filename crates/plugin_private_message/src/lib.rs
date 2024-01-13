@@ -228,28 +228,50 @@ async fn perform_command(
 
             Ok(())
         }
+        Commands::SiteBanRemove(username, reason) => {
+            perform_site_ban(client, admins, username, reason, true).await
+        }
         Commands::SiteBan(username, reason) => {
-            // Get target user
-            let person = match person_get(client, PersonRef::Username(username)).await {
-                Ok(value) => value,
-                Err(err) => {
-                    println!("{}", err);
-                    return Err(err);
-                }
-            };
-
-            // Verify user is not a local admin
-            if admins.iter().any(|admin| admin.id == person.id) || person.id == client.user_id() {
-                return Ok(());
-            }
-
-            // Perform user ban
-            if let Err(err) = person_ban(client, person.id, true, None, Some(reason)).await {
-                println!("{}", err);
-                return Err(err);
-            }
-
-            Ok(())
+            perform_site_ban(client, admins, username, reason, false).await
         }
     }
+}
+
+async fn perform_site_ban(
+    client: &Client,
+    admins: &[Person],
+    username: String,
+    reason: String,
+    remove_content: bool,
+) -> Result<(), ClientError> {
+    // Get target user
+    let person = match person_get(client, PersonRef::Username(username)).await {
+        Ok(value) => value,
+        Err(err) => {
+            println!("{}", err);
+            return Err(err);
+        }
+    };
+
+    // Verify user is not a local admin
+    if admins.iter().any(|admin| admin.id == person.id) || person.id == client.user_id() {
+        return Ok(());
+    }
+
+    // Perform user ban
+    if let Err(err) = person_ban(
+        client,
+        person.id,
+        true,
+        Some(remove_content),
+        Some(reason),
+        None,
+    )
+    .await
+    {
+        println!("{}", err);
+        return Err(err);
+    }
+
+    Ok(())
 }

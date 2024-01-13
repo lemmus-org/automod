@@ -1,6 +1,7 @@
 use crate::endpoints::{ADMIN_PURGE_USER, USER, USER_BAN};
 use crate::model::Person;
 use crate::{Client, ClientError};
+use chrono::{DateTime, Utc};
 use lemmy_api_common::lemmy_db_schema::newtypes::PersonId;
 use lemmy_api_common::person::{BanPerson, GetPersonDetails, GetPersonDetailsResponse};
 use lemmy_api_common::site::PurgePerson;
@@ -52,17 +53,18 @@ pub async fn person_ban(
     client: &Client,
     person_id: i32,
     ban: bool,
-    purge: Option<bool>,
+    remove_content: Option<bool>,
     reason: Option<String>,
+    expires: Option<DateTime<Utc>>,
 ) -> Result<(), ClientError> {
     // Create request
     let path = USER_BAN;
     let params = BanPerson {
         person_id: PersonId(person_id),
         ban,
-        remove_data: purge,
+        remove_data: remove_content,
         reason,
-        ..Default::default()
+        expires: expires.map(|exp| exp.timestamp()),
     };
 
     // Perform request
