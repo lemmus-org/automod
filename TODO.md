@@ -1,10 +1,6 @@
 # TODOs
 
 ## General Improvements
-* Proper logging
-  * Should support both text and JSON output
-* Base Docker image
-  * For quick deployments and PR testing
 * PR validation
 * Unit tests
 * Documentation
