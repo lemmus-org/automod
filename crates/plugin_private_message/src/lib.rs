@@ -173,7 +173,7 @@ async fn perform_message_commands(
             return;
         }
         Some(command) => {
-            error!("Received command: {}", command);
+            debug!("Received command: {}", command);
             command
         }
     };
